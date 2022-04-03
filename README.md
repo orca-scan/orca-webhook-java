@@ -118,7 +118,7 @@ This [example](Application.java) uses the [srping boot](https://spring.io/projec
 
 ## Troubleshooting
 
-If you run into any issues not listed here, please [open a ticket](https://github.com/orca-scan/orca-webhook-python/issues).
+If you run into any issues not listed here, please [open a ticket](https://github.com/orca-scan/orca-webhook-java/issues).
 
 ## Examples in other langauges
 * [orca-webhook-dotnet](https://github.com/orca-scan/orca-webhook-dotnet)
