@@ -129,7 +129,7 @@ If you run into any issues not listed here, please [open a ticket](https://githu
 
 ## History
 
-For change-log, check [releases](https://github.com/orca-scan/orca-webhook-node/releases).
+For change-log, check [releases](https://github.com/orca-scan/orca-webhook-java/releases).
 
 ## License
 
