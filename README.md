@@ -1,6 +1,6 @@
 # orca-webhook-java
 
-Example of how to build an [Orca Scan WebHook](https://orcascan.com/docs/api/webhooks) endpoint in using [Java](https://www.java.com/) and [Spring boot](https://spring.io/projects/spring-boot) framework.
+Example of how to build an [Orca Scan WebHook](https://orcascan.com/docs/api/webhooks) endpoint and [Orca Scan WebHook In](https://orcascan.com/guides/how-to-update-orca-scan-from-your-system-4b249706) in using [Java](https://www.java.com/) and [Spring boot](https://spring.io/projects/spring-boot) framework.
 
 ## Install
 
@@ -57,6 +57,8 @@ curl --location --request POST 'http://127.0.0.1:8080' \
 
 This [example](Application.java) uses the [srping boot](https://spring.io/projects/spring-boot) framework:
 
+### WebHook Out
+
 ```java
 @RequestMapping(
         value = "/", 
@@ -96,6 +98,24 @@ This [example](Application.java) uses the [srping boot](https://spring.io/projec
     }
 ```
 
+### WebHook In
+
+```java
+    public static void webhook_in(){
+        RestTemplate restTemplate = new RestTemplate();
+        // The following example adds a new row to a sheet, setting the value of Barcode, Name, Quantity and Description
+        // TODO: change url to https://api.orcascan.com/sheets/{id}
+        String url = "https://httpbin.org/post";
+        String requestJson = "{\"___orca_action\":\"add\",\"Barcode\":\"0123456789\",\"Name\":\"New 1\",\"Quantity\":12,\"Description\":\"Add new row example\"}";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);
+        String answer = restTemplate.postForObject(url, entity, String.class);
+        System.out.println(answer);
+    }
+```
+
 ## Troubleshooting
 
 If you run into any issues not listed here, please [open a ticket](https://github.com/orca-scan/orca-webhook-python/issues).
@@ -104,6 +124,8 @@ If you run into any issues not listed here, please [open a ticket](https://githu
 * [orca-webhook-dotnet](https://github.com/orca-scan/orca-webhook-dotnet)
 * [orca-webhook-python](https://github.com/orca-scan/orca-webhook-python)
 * [orca-webhook-go](https://github.com/orca-scan/orca-webhook-go)
+* [orca-webhook-java](https://github.com/orca-scan/orca-webhook-java)
+* [orca-webhook-php](https://github.com/orca-scan/orca-webhook-php)
 
 ## History
 
