@@ -28,7 +28,7 @@ Your WebHook receiver will now be running on port 8080.
 You can emulate an Orca Scan WebHook using [cURL](https://dev.to/ibmdeveloper/what-is-curl-and-why-is-it-all-over-api-docs-9mh) by running the following:
 
 ```bash
-curl --location --request POST 'http://127.0.0.1:8080' \
+curl --location --request POST 'http://127.0.0.1:8080/orca-webhook-out' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "___orca_action": "add",
@@ -61,7 +61,7 @@ This [example](Application.java) uses the [srping boot](https://spring.io/projec
 
 ```java
 @RequestMapping(
-        value = "/", 
+        value = "/orca-webhook-out", 
         method = RequestMethod.POST)
     String index(@RequestBody Map<String, Object> payload)  throws Exception {
 
@@ -114,6 +114,16 @@ This [example](Application.java) uses the [srping boot](https://spring.io/projec
         String answer = restTemplate.postForObject(url, entity, String.class);
         System.out.println(answer);
     }
+```
+
+Use `http://127.0.0.1:8080/trigger-webhook-in` to trigget the in webhook and send the request.
+
+## Test server locally on Orca Cloud
+
+To expose the server securely from localhost and test it easily on the real Orca Cloud environment you can use [Secure Tunnels](https://ngrok.com/docs/secure-tunnels#what-are-ngrok-secure-tunnels). Take a look at [Ngrok](https://ngrok.com/) or [Cloudflare](https://www.cloudflare.com/).
+
+```bash
+ngrok http 8080
 ```
 
 ## Troubleshooting

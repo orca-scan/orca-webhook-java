@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 public class Application {
 
     @RequestMapping(
-        value = "/", 
+        value = "/orca-webhook-out", 
         method = RequestMethod.POST)
     String index(@RequestBody Map<String, Object> payload)  throws Exception {
 
@@ -66,6 +66,14 @@ public class Application {
         HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);
         String answer = restTemplate.postForObject(url, entity, String.class);
         System.out.println(answer);
+    }
+
+    @RequestMapping(
+        value = "/trigger-webhook-in", 
+        method = RequestMethod.GET)
+    String triggerWebhookIn() throws Exception {
+        webhook_in();
+        return "ok";
     }
 
     public static void main(String[] args) {
