@@ -2,6 +2,7 @@ package com.webhook;
 
 import java.util.Map;
 
+import org.json.simple.JSONObject;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
@@ -59,11 +60,16 @@ public class Application {
         // The following example adds a new row to a sheet, setting the value of Barcode, Name, Quantity and Description
         // TODO: change url to https://api.orcascan.com/sheets/{id}
         String url = "https://httpbin.org/post";
-        String requestJson = "{\"___orca_action\":\"add\",\"Barcode\":\"0123456789\",\"Name\":\"New 1\",\"Quantity\":12,\"Description\":\"Add new row example\"}";
+        JSONObject json = new JSONObject();
+        json.put("___orca_action", "add");
+        json.put("Barcode", "0123456789");
+        json.put("Name", "New 1");
+        json.put("Quantity", 12);
+        json.put("Description", "Add new row example");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);
+
+        HttpEntity<String> entity = new HttpEntity<String>(json.toJSONString(), headers);
         String answer = restTemplate.postForObject(url, entity, String.class);
         System.out.println(answer);
     }
