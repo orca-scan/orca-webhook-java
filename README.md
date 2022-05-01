@@ -104,7 +104,10 @@ String index(@RequestBody Map<String, Object> payload)  throws Exception {
 ### WebHook In
 
 ```java
-public static void webhook_in(){
+@RequestMapping(
+    value = "/trigger-webhook-in", 
+    method = RequestMethod.GET)
+String triggerWebhookIn() throws Exception {
     RestTemplate restTemplate = new RestTemplate();
     // The following example adds a new row to a sheet, setting the value of Barcode, Name, Quantity and Description
     // TODO: change url to https://api.orcascan.com/sheets/{id}
@@ -121,6 +124,7 @@ public static void webhook_in(){
     HttpEntity<String> entity = new HttpEntity<String>(json.toJSONString(), headers);
     String answer = restTemplate.postForObject(url, entity, String.class);
     System.out.println(answer);
+    return "ok";
 }
 ```
 

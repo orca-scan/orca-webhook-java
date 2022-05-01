@@ -54,8 +54,11 @@ public class Application {
         }
         return "ok";
     }
-
-    public static void webhook_in(){
+    
+    @RequestMapping(
+        value = "/trigger-webhook-in", 
+        method = RequestMethod.GET)
+    String triggerWebhookIn() throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         // The following example adds a new row to a sheet, setting the value of Barcode, Name, Quantity and Description
         // TODO: change url to https://api.orcascan.com/sheets/{id}
@@ -72,13 +75,6 @@ public class Application {
         HttpEntity<String> entity = new HttpEntity<String>(json.toJSONString(), headers);
         String answer = restTemplate.postForObject(url, entity, String.class);
         System.out.println(answer);
-    }
-
-    @RequestMapping(
-        value = "/trigger-webhook-in", 
-        method = RequestMethod.GET)
-    String triggerWebhookIn() throws Exception {
-        webhook_in();
         return "ok";
     }
 
