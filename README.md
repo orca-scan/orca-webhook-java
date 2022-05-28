@@ -6,6 +6,14 @@ Example of how to build an [Orca Scan WebHook](https://orcascan.com/docs/api/web
 
 First ensure you have [Java](https://www.java.com/) and [Maven](https://maven.apache.org/install.html) installed.
 
+```bash
+# should return 1.7 or higher
+java -version
+
+# should return 3.8.5 or higher
+mvn -v
+```
+
 Then execute the following:
 
 ```bash
@@ -68,7 +76,7 @@ This [example](Application.java) uses the [srping boot](https://spring.io/projec
     method = RequestMethod.POST)
 String index(@RequestBody Map<String, Object> payload)  throws Exception {
 
-    // dubug purpose: show in console raw data received
+    // debug purpose: show in console raw data received
     System.out.println(payload);
 
     // get the name of the action that triggered this request (add, update, delete, test)
@@ -128,7 +136,7 @@ String triggerWebhookIn() throws Exception {
 }
 ```
 
-Use `http://127.0.0.1:8080/trigger-webhook-in` to trigget the in webhook and send the request.
+Use `http://127.0.0.1:8080/trigger-webhook-in` to trigger the in webhook and send the request.
 
 ## Test server locally against Orca Cloud
 
