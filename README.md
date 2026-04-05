@@ -1,48 +1,45 @@
 # orca-webhook-java
 
-Example of how to build an [Orca Scan WebHook](https://orcascan.com/docs/api/webhooks) endpoint and [Orca Scan WebHook In](https://orcascan.com/guides/how-to-update-orca-scan-from-your-system-4b249706) in using [Java](https://www.java.com/) and [Spring boot](https://spring.io/projects/spring-boot) framework.
+Connect [Orca Scan](https://orcascan.com) to your own system using webhooks. When a user scans a barcode and adds, updates, or deletes a row, Orca Scan sends the data to your server in real-time - no polling, no manual exports.
 
-## Install
+This Java example shows you how to:
 
-First ensure you have [Java](https://www.java.com/) and [Maven](https://maven.apache.org/install.html) installed.
+- **Receive scan data** from Orca Scan as it happens ([Webhook Out](https://orcascan.com/guides/updating-your-system-data-when-a-barcode-is-scanned-da8bbe42))
+- **Push data back** into Orca Scan from your own system ([Webhook In](https://orcascan.com/guides/updating-orca-scan-data-from-your-system-4b249706))
 
-```bash
-# should return 1.7 or higher
-java -version
-
-# should return 3.8.5 or higher
-mvn -v
-```
-
-Then execute the following:
+## Quick start
 
 ```bash
-# download this example code
 git clone https://github.com/orca-scan/orca-webhook-java.git
-
-# go into the new directory
 cd orca-webhook-java
-
-# install dependecies
-mvn package
-```
-
-## Run
-
-```bash
-# start the project
 mvn spring-boot:run
 ```
 
-Your WebHook receiver will now be running on port 8080.
+Server runs on port **8888**.
 
-You can emulate an Orca Scan WebHook using [cURL](https://dev.to/ibmdeveloper/what-is-curl-and-why-is-it-all-over-api-docs-9mh) by running the following:
+## Receiving data from Orca Scan (Webhook Out)
+
+When a barcode is scanned and a row changes, Orca Scan sends a `POST` request to `/orca-webhook-out` with the row data as JSON. You can use this to sync inventory to your database, trigger alerts, update dashboards — whatever your workflow needs.
+
+Every request includes these system fields:
+
+| Field | Description |
+|---|---|
+| `___orca_event` | `rows:add`, `rows:update`, `rows:delete`, or `test` |
+| `___orca_sheet_name` | The sheet that triggered the event |
+| `___orca_user_email` | Email of the user _(HTTPS only)_ |
+
+All other fields match your sheet column names exactly _(case and space sensitive)_.
+
+The full docs cover additional events like [import](https://orcascan.com/guides/updating-your-system-data-when-a-barcode-is-scanned-da8bbe42#what-information-does-orca-scan-send-when-i-import-data), [clear](https://orcascan.com/guides/updating-your-system-data-when-a-barcode-is-scanned-da8bbe42#what-information-does-orca-scan-send-when-i-clear-data), and [security headers](https://orcascan.com/guides/updating-your-system-data-when-a-barcode-is-scanned-da8bbe42#security).
+
+### Test with cURL
 
 ```bash
-curl --location --request POST 'http://127.0.0.1:8080/orca-webhook-out' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "___orca_action": "add",
+curl -X POST 'http://127.0.0.1:8888/orca-webhook-out' \
+-H 'Content-Type: application/json' \
+-d '{
+    "___orca_event": "rows:add",
     "___orca_sheet_name": "Vehicle Checks",
     "___orca_user_email": "hidden@requires.https",
     "___orca_row_id": "5cf5c1efc66a9681047a0f3d",
@@ -58,109 +55,43 @@ curl --location --request POST 'http://127.0.0.1:8080/orca-webhook-out' \
 }'
 ```
 
-### Important things to note
+### Test with Orca Scan
 
-1. Only Orca Scan system fields start with `___`
-2. Properties in the JSON payload are an exact match to the  field names in your sheet _(case and space)_
-3. WebHooks are never retried, regardless of the HTTP response
-
-## How this example works
-
-This [example](Application.java) uses the [srping boot](https://spring.io/projects/spring-boot) framework:
-
-### WebHook Out
-
-```java
-@RequestMapping(
-    value = "/orca-webhook-out", 
-    method = RequestMethod.POST)
-String index(@RequestBody Map<String, Object> payload)  throws Exception {
-
-    // debug purpose: show in console raw data received
-    System.out.println(payload);
-
-    // get the name of the action that triggered this request (add, update, delete, test)
-    String action = payload.get("___orca_action").toString();
-
-    // get the name of the sheet this action impacts
-    String sheetName = payload.get("___orca_sheet_name").toString();
-
-    // get the email of the user who preformed the action (empty if not HTTPS)
-    String userEmail = payload.get("___orca_user_email").toString();
-
-    // NOTE:
-    // orca system fields start with ___
-    // you can access the value of each field using the field name (data.Name, data.Barcode, data.Location)
-    switch (action) {
-        case "add":
-            // TODO: do something when a row has been added
-            break;
-        case "update":
-            // TODO: do something when a row has been updated
-            break;
-        case "delete":
-            // TODO: do something when a row has been deleted
-            break;
-        case "test":
-            // TODO: do something when the user in the web app hits the test button
-            break;
-    }
-    return "ok";
-}
-```
-
-### WebHook In
-
-```java
-@RequestMapping(
-    value = "/trigger-webhook-in", 
-    method = RequestMethod.GET)
-String triggerWebhookIn() throws Exception {
-    RestTemplate restTemplate = new RestTemplate();
-    // The following example adds a new row to a sheet, setting the value of Barcode, Name, Quantity and Description
-    // TODO: change url to https://api.orcascan.com/sheets/{id}
-    String url = "https://httpbin.org/post";
-    JSONObject json = new JSONObject();
-    json.put("___orca_action", "add");
-    json.put("Barcode", "0123456789");
-    json.put("Name", "New 1");
-    json.put("Quantity", 12);
-    json.put("Description", "Add new row example");
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    HttpEntity<String> entity = new HttpEntity<String>(json.toJSONString(), headers);
-    String answer = restTemplate.postForObject(url, entity, String.class);
-    System.out.println(answer);
-    return "ok";
-}
-```
-
-Use `http://127.0.0.1:8080/trigger-webhook-in` to trigger the in webhook and send the request.
-
-## Test server locally against Orca Cloud
-
-To expose the server securely from localhost and test it easily against the real Orca Cloud environment you can use [Secure Tunnels](https://ngrok.com/docs/secure-tunnels#what-are-ngrok-secure-tunnels). Take a look at [Ngrok](https://ngrok.com/) or [Cloudflare](https://www.cloudflare.com/).
+Expose your local server with [localtunnel](https://github.com/localtunnel/localtunnel):
 
 ```bash
-ngrok http 8080
+npx localtunnel --port 8888
 ```
 
-## Troubleshooting
+Then [add the tunnel URL as your Webhook Out endpoint](https://orcascan.com/guides/capture-barcode-scan-events-with-webhooks-da8bbe42#how-to-set-up-a-webhook-out-url) in the Orca Scan web app and hit **Test**.
 
-If you run into any issues not listed here, please [open a ticket](https://github.com/orca-scan/orca-webhook-java/issues).
+> Webhooks are fire-and-forget — they are not retried regardless of HTTP response.
 
-## Examples in other langauges
-* [orca-webhook-dotnet](https://github.com/orca-scan/orca-webhook-dotnet)
-* [orca-webhook-python](https://github.com/orca-scan/orca-webhook-python)
-* [orca-webhook-go](https://github.com/orca-scan/orca-webhook-go)
-* [orca-webhook-java](https://github.com/orca-scan/orca-webhook-java)
-* [orca-webhook-php](https://github.com/orca-scan/orca-webhook-php)
-* [orca-webhook-node](https://github.com/orca-scan/orca-webhook-node)
+## Pushing data into Orca Scan (Webhook In)
 
-## History
+Need to update Orca Scan from your own system? Hit `GET /trigger-webhook-in` to push a row into a sheet via the [Webhook In API](https://orcascan.com/guides/updating-orca-scan-data-from-your-system-4b249706).
 
-For change-log, check [releases](https://github.com/orca-scan/orca-webhook-java/releases).
+To connect it to your sheet, update the URL in [Server.java](src/main/java/com/webhook/Server.java):
+
+```
+https://api.orcascan.com/sheets/{id}
+```
+
+See the [REST API docs](https://orcascan.com/guides/barcode-scanning-rest-api-f09a21c3) for all available endpoints.
+
+## Examples in other languages
+
+| Language | Repository |
+|---|---|
+| Node.js | [orca-webhook-node](https://github.com/orca-scan/orca-webhook-node) |
+| C# | [orca-webhook-dotnet](https://github.com/orca-scan/orca-webhook-dotnet) |
+| Python | [orca-webhook-python](https://github.com/orca-scan/orca-webhook-python) |
+| Go | [orca-webhook-go](https://github.com/orca-scan/orca-webhook-go) |
+| PHP | [orca-webhook-php](https://github.com/orca-scan/orca-webhook-php) |
+
+## Help
+
+[Chat to us live](https://orcascan.com/#chat) if you run into any issues.
 
 ## License
 
